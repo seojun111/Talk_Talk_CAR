@@ -12,7 +12,7 @@ class TTSService {
   Future<void> _init() async {
     await flutterTts.setLanguage("ko-KR");
     await flutterTts.setPitch(1.0);
-    await flutterTts.setSpeechRate(0.5);
+    await flutterTts.setSpeechRate(2.0);
     await flutterTts.awaitSpeakCompletion(true);
 
     // 웹 환경에서 음성 설정 명시적으로 지정
@@ -20,7 +20,7 @@ class TTSService {
       List<dynamic> voices = await flutterTts.getVoices;
       if (voices.isNotEmpty) {
         var koreanVoice = voices.firstWhere(
-          (v) => v['locale'] == "ko-KR",
+              (v) => v['locale'] == "ko-KR",
           orElse: () => voices.first,
         );
         await flutterTts.setVoice({
