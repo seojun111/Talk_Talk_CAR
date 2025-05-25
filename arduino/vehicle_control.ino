@@ -4,7 +4,6 @@
 SoftwareSerial BTSerial(10, 11);  // HC-06 Bluetooth
 Servo speedServo;
 
-// 핀 정의
 const int START_LED = 9;
 const int SERVO_PIN = 6;
 const int RED_PIN = 3;
@@ -13,7 +12,7 @@ const int BLUE_PIN = 5;
 const int WARNING_LED = 2;
 const int SPEAKER = 7;
 
-int batteryPercent = 0;  // 1~100%
+int batteryPercent = 0;
 bool engineOn = false;
 bool doorOpen = false;
 int currentSpeed = 0;
@@ -32,7 +31,7 @@ void setup() {
   speedServo.attach(SERVO_PIN);
 
   randomSeed(analogRead(0));
-  batteryPercent = random(1, 101);  // 1% ~ 100%
+  batteryPercent = random(1, 101);
 
   Serial.println("시스템 시작됨. 배터리 잔량:");
   Serial.print(batteryPercent);
@@ -71,7 +70,7 @@ void updateBatteryLED() {
 void updateSpeedServo(int speed) {
   currentSpeed = speed;
   speed = constrain(speed, 0, 120);
-  int angle = map(speed, 0, 120, 90, 0);  // S0 = 90도, S120 = 0도
+  int angle = map(speed, 0, 120, 90, 0);
   speedServo.write(angle);
   Serial.print("속도 설정: ");
   Serial.print(speed);
@@ -79,22 +78,19 @@ void updateSpeedServo(int speed) {
   Serial.println(angle);
 }
 
-void simulateCollision() {
-  bool shockDetected = (random(15) == 0);
-  if (shockDetected) {
-    digitalWrite(WARNING_LED, HIGH);
-    tone(SPEAKER, 1000);
-    delay(1000);
-    noTone(SPEAKER);
-    digitalWrite(WARNING_LED, LOW);
+void triggerEmergency() {
+  Serial.println("🚨 위급 상황 발생");
+  BTSerial.println("🚨 위급 상황 발생");
 
-    Serial.println("⚠️ 충돌 감지됨");
-    BTSerial.println("충돌 감지됨");
-  }
+  digitalWrite(WARNING_LED, HIGH);
+  tone(SPEAKER, 1000);
+  delay(1000);
+  noTone(SPEAKER);
+  digitalWrite(WARNING_LED, LOW);
 }
 
 void playOpenMelody() {
-  int melody[] = {262, 294, 330};  // 도레미
+  int melody[] = {262, 294, 330};
   for (int i = 0; i < 3; i++) {
     tone(SPEAKER, melody[i]);
     delay(250);
@@ -150,11 +146,11 @@ void processCommand(String cmd) {
   else if (cmd == "B") notifyDoorOpen();
   else if (cmd == "b") notifyDoorClose();
   else if (cmd == "T") reportStatus();
+  else if (cmd == "E") triggerEmergency();  // ✅ Flutter에서 위급상황 알림
   else Serial.println("⚠️ 알 수 없는 명령어");
 }
 
 void loop() {
-  simulateCollision();
   repeatDoorMelody();
 
   if (Serial.available()) {
