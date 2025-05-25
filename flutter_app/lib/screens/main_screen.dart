@@ -15,7 +15,7 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  final WebSocketService _webSocketService = WebSocketService();
+  final WebSocketService _webSocketService = WebSocketService(); // ✅ 실 WebSocket 서비스로 변경
   final TTSService _ttsService = TTSService();
   final SpeechService _speechService = SpeechService();
   final VoiceCommandService _commandService = VoiceCommandService();
@@ -24,6 +24,8 @@ class _MainScreenState extends State<MainScreen> {
   String _speed = '0 km/h';
   String _battery = '100%';
   String _mode = '대기 중';
+  int _currentSpeed = 0;
+  bool _engineOn = false;
 
   @override
   void initState() {
@@ -78,7 +80,7 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   void dispose() {
-    _webSocketService.disconnect();
+    _webSocketService.disconnect(); // ✅ 실제 연결 종료
     _ttsService.stop();
     super.dispose();
   }
@@ -157,13 +159,13 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   TextStyle _statusStyle() => GoogleFonts.roboto(
-    color: Colors.white,
-    fontSize: 24,
-    fontWeight: FontWeight.bold,
-  );
+        color: Colors.white,
+        fontSize: 24,
+        fontWeight: FontWeight.bold,
+      );
 
   TextStyle _infoStyle() => GoogleFonts.roboto(
-    color: Colors.white,
-    fontSize: 20,
-  );
+        color: Colors.white,
+        fontSize: 20,
+      );
 }

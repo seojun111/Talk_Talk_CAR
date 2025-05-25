@@ -16,7 +16,7 @@ app.add_middleware(
 
 # 아두이노 시리얼 포트 설정
 try:
-    arduino = serial.Serial('COM5', 9600, timeout=1)
+    arduino = serial.Serial('COM3', 9600, timeout=1)
     time.sleep(2)
     print("✅ 아두이노 연결 성공")
 except Exception as e:

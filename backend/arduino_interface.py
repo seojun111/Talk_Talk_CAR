@@ -4,7 +4,7 @@ import threading
 import time
 
 class ArduinoInterface:
-    def __init__(self, port='COM5', baudrate=9600):
+    def __init__(self, port='COM3', baudrate=9600):
         self.port = port
         self.baudrate = baudrate
         self.ser = None
