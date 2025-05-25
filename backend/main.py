@@ -6,7 +6,7 @@ import time
 
 app = FastAPI()
 
-# CORS 설정 (웹 Flutter 앱에서 호출 허용)
+# CORS 설정
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -14,7 +14,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 아두이노 시리얼 포트 설정
+# 아두이노 연결 시도
 try:
     arduino = serial.Serial('COM3', 9600, timeout=1)
     time.sleep(2)
@@ -23,14 +23,14 @@ except Exception as e:
     arduino = None
     print(f"❌ 아두이노 연결 실패: {e}")
 
-# 상태값 저장용 변수
+# 차량 상태 저장
 status = {
     "voltage": 0.0,
     "speed": 0,
     "engine_on": False
 }
 
-# 아두이노에서 데이터를 읽어오는 쓰레드
+# 아두이노로부터 상태 읽기
 def read_from_arduino():
     global status
     while arduino and arduino.is_open:
@@ -50,7 +50,7 @@ def read_from_arduino():
 if arduino:
     threading.Thread(target=read_from_arduino, daemon=True).start()
 
-# 음성 명령 처리용
+# 명령 수신
 @app.post("/command")
 async def handle_command(payload: dict):
     command = payload.get("command", "")
@@ -58,7 +58,6 @@ async def handle_command(payload: dict):
         arduino.write((command + "\n").encode())
         print(f"📤 명령 전송: {command}")
 
-        # 내부 상태 업데이트 (선택적)
         if command == "0":
             status["engine_on"] = True
         elif command == "1":
@@ -72,7 +71,15 @@ async def handle_command(payload: dict):
 
     return {"status": "ok", "command": command}
 
-# ✅ 상태 조회용 엔드포인트
+# 상태 조회
 @app.get("/status")
 async def get_status():
     return status
+
+# ✅ 위급상황 처리
+@app.post("/emergency")
+async def emergency_alert():
+    if arduino and arduino.is_open:
+        arduino.write(b"E\n")  # E는 위급상황 알림 신호
+        print("🚨 아두이노에 위급상황(E) 전송 완료")
+    return {"status": "emergency_sent"}
