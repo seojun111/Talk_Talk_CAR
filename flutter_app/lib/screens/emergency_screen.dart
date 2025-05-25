@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vibration/vibration.dart'; // 진동 패키지
+import 'package:http/http.dart' as http; // 🔴 추가
 import '../services/tts_service.dart';
 
 class EmergencyScreen extends StatefulWidget {
@@ -23,6 +24,7 @@ class _EmergencyScreenState extends State<EmergencyScreen>
     _setupAnimation();
     _announceEmergency();
     _vibrateOnStart();
+    _notifyEmergencyToBackend(); // 🔴 위급상황 알림 서버로 전송
   }
 
   Future<void> _loadGuardianInfo() async {
@@ -53,6 +55,22 @@ class _EmergencyScreenState extends State<EmergencyScreen>
   Future<void> _vibrateOnStart() async {
     if (await Vibration.hasVibrator() ?? false) {
       Vibration.vibrate(duration: 1000);
+    }
+  }
+
+  Future<void> _notifyEmergencyToBackend() async {
+    try {
+      final response = await http.post(
+        Uri.parse('http://10.0.2.2:8080/emergency'),
+        headers: {'Content-Type': 'application/json'},
+      );
+      if (response.statusCode == 200) {
+        print('✅ 위급 상황 알림 전송 성공');
+      } else {
+        print('❌ 위급 상황 전송 실패: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('❌ 위급 상황 전송 중 오류: $e');
     }
   }
 
