@@ -1,6 +1,3 @@
-
-// lib/services/voice_command_service.dart
-
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -14,7 +11,7 @@ class VoiceCommandService {
   Future<void> sendCommand(String cmd) async {
     try {
       final response = await http.post(
-        Uri.parse('http://127.0.0.1:8080/command'),
+        Uri.parse('http://localhost:8000/command'), // ✅ 수정됨
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'command': cmd}),
       );
@@ -33,7 +30,7 @@ class VoiceCommandService {
   Future<Map<String, dynamic>?> getStatus() async {
     try {
       final response = await http.get(
-        Uri.parse('http://127.0.0.1:8080/status'),
+        Uri.parse('http://localhost:8000/status'), // ✅ 수정됨
         headers: {'Accept': 'application/json'},
       );
 
@@ -51,6 +48,3 @@ class VoiceCommandService {
     }
   }
 }
-
-
-
