@@ -1,4 +1,3 @@
-// mypage.dart
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/speech_service.dart';
@@ -47,15 +46,16 @@ class _MyPageScreenState extends State<MyPageScreen> {
 
     final cleanCommand = command.toLowerCase().trim();
 
-    if (cleanCommand.contains('내 정보') && cleanCommand.contains('알려')) {
+    if (cleanCommand.contains('입력')) {
+      // ✅ 이제 '입력'이라는 단어만 있어도 정보 입력 활성화
+      await _startInfoRegistration();
+    } else if (cleanCommand.contains('내 정보') && cleanCommand.contains('알려')) {
       if (name == '미등록' || phone == '미등록' || address == '미등록' || guardianPhone == '미등록') {
         await _ttsService.speak('아직 사용자 정보가 등록되지 않았습니다.');
       } else {
         await _ttsService.speak(
             '등록된 정보는 다음과 같습니다. 이름은 $name, 전화번호는 $phone, 주소는 $address, 보호자 연락처는 $guardianPhone 입니다.');
       }
-    } else if (cleanCommand.contains('내 정보') && cleanCommand.contains('입력')) {
-      await _startInfoRegistration();
     } else {
       if (mounted) {
         Navigator.pushReplacement(
@@ -84,7 +84,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
   Future<void> _startInfoRegistration() async {
     final prefs = await SharedPreferences.getInstance();
 
-    final newName = await _listenWithCancelCheck('이름을 말씀해주세요.');
+    final newName = await _listenWithCancelCheck('내 정보를 등록 합니다. 이름을 말씀해주세요.');
     if (newName == null) return;
     prefs.setString('name', newName);
 
@@ -134,7 +134,8 @@ class _MyPageScreenState extends State<MyPageScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('내 정보', style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white)),
+                  Text('내 정보',
+                      style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white)),
                   SizedBox(height: 20),
                   _infoRow(Icons.person, '이름', name),
                   _infoRow(Icons.phone, '전화번호', phone),
