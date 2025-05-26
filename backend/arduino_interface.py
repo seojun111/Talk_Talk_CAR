@@ -1,4 +1,3 @@
-# arduino_interface.py
 import serial
 import threading
 import time
@@ -36,9 +35,12 @@ class ArduinoInterface:
     def read_voltage(self):
         self.send("C")
         time.sleep(0.5)
-        if self.ser and self.ser.in_waiting:
+        if self.ser:
             try:
-                return float(self.ser.readline().decode().strip())
+                for _ in range(10):
+                    if self.ser.in_waiting:
+                        return float(self.ser.readline().decode().strip())
+                    time.sleep(0.1)
             except Exception as e:
                 print(f"[⚠ 전압 읽기 실패] {e}")
         return -1
@@ -46,3 +48,8 @@ class ArduinoInterface:
     def adjust_speed(self, delta: int):
         self.current_speed = max(0, min(120, self.current_speed + delta))
         self.send(f"S{self.current_speed}")
+
+    def set_fuel_level(self, percent: int):
+        percent = max(0, min(100, percent))
+        self.send(f"F{percent}")
+        print(f"[🔋 연료 상태 설정됨] {percent}%")
