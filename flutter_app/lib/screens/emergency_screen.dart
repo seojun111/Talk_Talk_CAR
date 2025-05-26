@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:vibration/vibration.dart'; // 진동 패키지
-import 'package:http/http.dart' as http; // 🔴 추가
+import 'package:vibration/vibration.dart';
+import 'package:http/http.dart' as http;
 import '../services/tts_service.dart';
 
 class EmergencyScreen extends StatefulWidget {
@@ -24,7 +24,7 @@ class _EmergencyScreenState extends State<EmergencyScreen>
     _setupAnimation();
     _announceEmergency();
     _vibrateOnStart();
-    _notifyEmergencyToBackend(); // 🔴 위급상황 알림 서버로 전송
+    _notifyEmergencyToBackend();
   }
 
   Future<void> _loadGuardianInfo() async {
@@ -61,7 +61,7 @@ class _EmergencyScreenState extends State<EmergencyScreen>
   Future<void> _notifyEmergencyToBackend() async {
     try {
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:8080/emergency'),
+        Uri.parse('http://localhost:8000/emergency'), // ✅ 웹용 주소
         headers: {'Content-Type': 'application/json'},
       );
       if (response.statusCode == 200) {
@@ -94,7 +94,7 @@ class _EmergencyScreenState extends State<EmergencyScreen>
     return Scaffold(
       backgroundColor: Colors.redAccent,
       body: GestureDetector(
-        behavior: HitTestBehavior.opaque, // ✅ 화면 전체 감지
+        behavior: HitTestBehavior.opaque,
         onTap: () {
           _makeEmergencyCall();
         },
