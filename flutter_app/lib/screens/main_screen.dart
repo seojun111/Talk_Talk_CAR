@@ -43,7 +43,7 @@ class _MainScreenState extends State<MainScreen> {
       final status = await _commandService.getStatus();
       if (status != null && mounted) {
         setState(() {
-          _battery = '${status['voltage']}V';
+          _battery = '${status['battery']}%'; // ✅ 수정된 부분
           _speed = '${status['speed']} km/h';
           _mode = status['engine_on'] ? '켜짐' : '꺼짐';
         });
@@ -177,13 +177,13 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   TextStyle _statusStyle() => GoogleFonts.roboto(
-    color: Colors.white,
-    fontSize: 24,
-    fontWeight: FontWeight.bold,
-  );
+        color: Colors.white,
+        fontSize: 24,
+        fontWeight: FontWeight.bold,
+      );
 
   TextStyle _infoStyle() => GoogleFonts.roboto(
-    color: Colors.white,
-    fontSize: 20,
-  );
+        color: Colors.white,
+        fontSize: 20,
+      );
 }
