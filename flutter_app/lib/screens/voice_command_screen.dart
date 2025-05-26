@@ -1,3 +1,4 @@
+// voice_command_screen.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -9,8 +10,10 @@ import 'dart:async';
 
 class VoiceCommandScreen extends StatefulWidget {
   final String? passedCommand;
+  final bool isHeavyRain; // ✅ 폭우 상태 추가
 
-  const VoiceCommandScreen({Key? key, this.passedCommand}) : super(key: key);
+  const VoiceCommandScreen({Key? key, this.passedCommand, this.isHeavyRain = false})
+      : super(key: key);
 
   @override
   _VoiceCommandScreenState createState() => _VoiceCommandScreenState();
@@ -53,6 +56,12 @@ class _VoiceCommandScreenState extends State<VoiceCommandScreen>
   }
 
   Future<void> _startFlowAfterTTS() async {
+    // ✅ 폭우 상태일 때 경고 안내 추가
+    if (widget.isHeavyRain) {
+      await _ttsService.speak("현재 폭우로 인해 자율주행 관련 기능은 사용 불가합니다.");
+      await Future.delayed(Duration(milliseconds: 300));
+    }
+
     await _ttsService.speak("명령을 말씀해주세요.");
     await Future.delayed(Duration(milliseconds: 100));
     _startListeningTimer();
