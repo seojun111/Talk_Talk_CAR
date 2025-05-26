@@ -57,10 +57,21 @@ async def handle_command(request: Request):
     global status
     data = await request.json()
     command = data.get("command", "")
+    is_heavy_rain = data.get("is_heavy_rain", False)  # ✅ 폭우 여부 파라미터
 
     mapped = ""
     command = command.strip()
     print(f"🗣 받은 음성 명령: {command}")
+    print(f"🌧 폭우 상태: {is_heavy_rain}")
+
+    if is_heavy_rain:
+        # 폭우 상태에서는 명령을 수행하지 않음
+        return {
+            "status": "skipped_due_to_heavy_rain",
+            "command": command,
+            "sent": None,
+            "skipped": True
+        }
 
     if "시동켜" in command:
         mapped = "0"
@@ -84,7 +95,12 @@ async def handle_command(request: Request):
         arduino.write((mapped + "\n").encode())
         print(f"📤 명령 전송: {mapped}")
 
-    return {"status": "ok", "command": command, "sent": mapped}
+    return {
+        "status": "ok",
+        "command": command,
+        "sent": mapped,
+        "skipped": False
+    }
 
 # 상태 조회용
 @app.get("/status")
