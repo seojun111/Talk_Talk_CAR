@@ -12,7 +12,7 @@ const int BLUE_PIN = 5;
 const int WARNING_LED = 2;
 const int SPEAKER = 7;
 
-int batteryPercent = 0;
+int batteryPercent = 0;  // ✅ 초기값만 0으로 두고, 백엔드에서 설정함
 bool engineOn = false;
 bool doorOpen = false;
 int currentSpeed = 0;
@@ -30,13 +30,7 @@ void setup() {
   BTSerial.begin(9600);
   speedServo.attach(SERVO_PIN);
 
-  randomSeed(analogRead(0));
-  batteryPercent = random(1, 101);
-
-  Serial.println("시스템 시작됨. 배터리 잔량:");
-  Serial.print(batteryPercent);
-  Serial.println("%");
-
+  Serial.println("시스템 시작됨. 배터리 잔량은 백엔드에서 설정됩니다.");
   updateBatteryLED();
 }
 
@@ -143,10 +137,14 @@ void processCommand(String cmd) {
     int speed = cmd.substring(1).toInt();
     updateSpeedServo(speed);
   }
+  else if (cmd.startsWith("F")) {  // ✅ 백엔드에서 배터리 잔량 설정
+    batteryPercent = constrain(cmd.substring(1).toInt(), 0, 100);
+    updateBatteryLED();
+  }
   else if (cmd == "B") notifyDoorOpen();
   else if (cmd == "b") notifyDoorClose();
   else if (cmd == "T") reportStatus();
-  else if (cmd == "E") triggerEmergency();  // ✅ Flutter에서 위급상황 알림
+  else if (cmd == "E") triggerEmergency();
   else Serial.println("⚠️ 알 수 없는 명령어");
 }
 
