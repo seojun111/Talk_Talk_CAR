@@ -3,7 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'dart:convert';
 import '../services/websocket_service.dart';
 import '../services/tts_service.dart';
-import '../services/speech_service.dart';
 import '../services/voice_command_service.dart';
 import 'voice_command_screen.dart';
 import 'emergency_screen.dart';
@@ -17,13 +16,13 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   final WebSocketService _webSocketService = WebSocketService();
   final TTSService _ttsService = TTSService();
-  final SpeechService _speechService = SpeechService();
   final VoiceCommandService _commandService = VoiceCommandService();
 
   String _status = '연결 안됨';
   String _speed = '0 km/h';
   String _battery = '100%';
   String _mode = '대기 중';
+
   bool isHeavyRain = false;
 
   @override
@@ -35,7 +34,7 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future<void> _initTTS() async {
-    await _ttsService.speak("톡톡카입니다. 버튼을 눌러 음성 명령을 시작하세요.");
+    await _ttsService.speak("톡톡카 입니다. 버튼을 눌러 음성 명령을 시작하세요.");
   }
 
   void _startStatusUpdater() {
@@ -43,7 +42,7 @@ class _MainScreenState extends State<MainScreen> {
       final status = await _commandService.getStatus();
       if (status != null && mounted) {
         setState(() {
-          _battery = '${status['battery']}%'; // ✅ 수정된 부분
+          _battery = '${status['voltage']}V';
           _speed = '${status['speed']} km/h';
           _mode = status['engine_on'] ? '켜짐' : '꺼짐';
         });
@@ -88,8 +87,12 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        title: Text('톡톡카 - 실시간 차량 모니터링'),
+        centerTitle: true,
         backgroundColor: Colors.blueAccent,
-        title: Row(
+        leadingWidth: 100, // 좌측 버튼 영역 넓게
+        leading: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
               icon: Icon(Icons.warning, color: Colors.redAccent),
@@ -102,22 +105,16 @@ class _MainScreenState extends State<MainScreen> {
               },
             ),
             IconButton(
-              icon: Icon(
-                Icons.cloud,
-                color: isHeavyRain ? Colors.redAccent : Colors.green,
-              ),
-              tooltip: '폭우 모드',
+              icon: Icon(Icons.cloud, color: isHeavyRain ? Colors.red : Colors.green),
+              tooltip: '폭우 On/Off',
               onPressed: () {
                 setState(() {
                   isHeavyRain = !isHeavyRain;
                 });
               },
             ),
-            SizedBox(width: 8),
-            Text('톡톡카 - 실시간 차량 모니터링'),
           ],
         ),
-        centerTitle: false,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -147,7 +144,12 @@ class _MainScreenState extends State<MainScreen> {
             ),
             SizedBox(height: 24),
             GestureDetector(
-              onTap: () {
+              onTap: () async {
+                if (isHeavyRain) {
+                  await _ttsService.speak("현재 폭우로 인해 자율주행 관련 기능은 사용 불가합니다.");
+                  return; // 음성 명령 화면 진입 막음
+                }
+
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -177,13 +179,13 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   TextStyle _statusStyle() => GoogleFonts.roboto(
-        color: Colors.white,
-        fontSize: 24,
-        fontWeight: FontWeight.bold,
-      );
+    color: Colors.white,
+    fontSize: 24,
+    fontWeight: FontWeight.bold,
+  );
 
   TextStyle _infoStyle() => GoogleFonts.roboto(
-        color: Colors.white,
-        fontSize: 20,
-      );
+    color: Colors.white,
+    fontSize: 20,
+  );
 }
