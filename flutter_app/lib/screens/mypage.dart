@@ -1,4 +1,4 @@
-//mypage.dart
+// mypage.dart
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/speech_service.dart';
@@ -6,6 +6,10 @@ import '../services/tts_service.dart';
 import 'voice_command_screen.dart';
 
 class MyPageScreen extends StatefulWidget {
+  final bool isHeavyRain; // ✅ 폭우 상태 전달
+
+  const MyPageScreen({Key? key, this.isHeavyRain = false}) : super(key: key);
+
   @override
   _MyPageScreenState createState() => _MyPageScreenState();
 }
@@ -47,7 +51,8 @@ class _MyPageScreenState extends State<MyPageScreen> {
       if (name == '미등록' || phone == '미등록' || address == '미등록' || guardianPhone == '미등록') {
         await _ttsService.speak('아직 사용자 정보가 등록되지 않았습니다.');
       } else {
-        await _ttsService.speak('등록된 정보는 다음과 같습니다. 이름은 $name, 전화번호는 $phone, 주소는 $address, 보호자 연락처는 $guardianPhone 입니다.');
+        await _ttsService.speak(
+            '등록된 정보는 다음과 같습니다. 이름은 $name, 전화번호는 $phone, 주소는 $address, 보호자 연락처는 $guardianPhone 입니다.');
       }
     } else if (cleanCommand.contains('내 정보') && cleanCommand.contains('입력')) {
       await _startInfoRegistration();
@@ -56,7 +61,10 @@ class _MyPageScreenState extends State<MyPageScreen> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => VoiceCommandScreen(passedCommand: command),
+            builder: (context) => VoiceCommandScreen(
+              passedCommand: command,
+              isHeavyRain: widget.isHeavyRain, // ✅ 폭우 상태 전달
+            ),
           ),
         );
       }
@@ -99,7 +107,8 @@ class _MyPageScreenState extends State<MyPageScreen> {
       guardianPhone = newGuardianPhone;
     });
 
-    await _ttsService.speak('모든 정보가 등록되었습니다. 등록된 정보는 다음과 같습니다. 이름은 $name, 전화번호는 $phone, 주소는 $address, 보호자 연락처는 $guardianPhone 입니다.');
+    await _ttsService.speak(
+        '모든 정보가 등록되었습니다. 등록된 정보는 다음과 같습니다. 이름은 $name, 전화번호는 $phone, 주소는 $address, 보호자 연락처는 $guardianPhone 입니다.');
   }
 
   @override
@@ -175,4 +184,3 @@ class _MyPageScreenState extends State<MyPageScreen> {
     );
   }
 }
-
