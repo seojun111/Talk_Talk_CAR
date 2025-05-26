@@ -9,7 +9,7 @@ import 'dart:async';
 
 class VoiceCommandScreen extends StatefulWidget {
   final String? passedCommand;
-  final bool isHeavyRain; // ✅ 폭우 상태 추가
+  final bool isHeavyRain;
 
   const VoiceCommandScreen({Key? key, this.passedCommand, this.isHeavyRain = false})
       : super(key: key);
@@ -55,7 +55,6 @@ class _VoiceCommandScreenState extends State<VoiceCommandScreen>
   }
 
   Future<void> _startFlowAfterTTS() async {
-    // ✅ 폭우 상태일 때 경고 안내 추가
     if (widget.isHeavyRain) {
       await _ttsService.speak("현재 폭우로 인해 자율주행 관련 기능은 사용 불가합니다.");
       await Future.delayed(Duration(milliseconds: 300));
@@ -133,8 +132,9 @@ class _VoiceCommandScreenState extends State<VoiceCommandScreen>
     }
   }
 
+  // ✅ 이제 '마이페이지' 단어만 있으면 전환
   bool _checkNavigateToMyPage(String text) {
-    return text.contains("마이페이지") && text.contains("이동");
+    return text.contains("마이페이지");
   }
 
   Future<void> _navigateToMyPage() async {
@@ -142,7 +142,7 @@ class _VoiceCommandScreenState extends State<VoiceCommandScreen>
     if (mounted) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => MyPageScreen()),
+        MaterialPageRoute(builder: (context) => MyPageScreen(isHeavyRain: widget.isHeavyRain)),
       );
     }
   }
