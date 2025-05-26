@@ -7,9 +7,9 @@ class WebSocketService {
   final _controller = StreamController<String>.broadcast();
   bool _isConnected = false;
 
-  final String _url = 'ws://172.31.89.176:8000/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyIiwiZXhwIjoxNzQ3MTM4NzQ2fQ.s3aJ4ZPnbAwUBpQ54ohwipgDEHG4L887D2g14RQt4Bw'; // ✅ 실제 FastAPI WebSocket 주소
+  final String _url =
+      'ws://192.168.0.10:8000/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyIiwiZXhwIjoxNzQ3MTM4NzQ2fQ.s3aJ4ZPnbAwUBpQ54ohwipgDEHG4L887D2g14RQt4Bw'; // ✅ 실제 서버 IP 사용
 
-  /// WebSocket 연결
   void connect() {
     if (_isConnected) return;
 
@@ -19,7 +19,7 @@ class WebSocketService {
       print("✅ WebSocket 연결됨: $_url");
 
       _channel!.stream.listen(
-            (message) {
+        (message) {
           print("📥 수신된 메시지: $message");
           _controller.add(message);
         },
@@ -39,7 +39,6 @@ class WebSocketService {
     }
   }
 
-  /// 메시지 전송
   void send(String message) {
     if (_isConnected && _channel != null) {
       _channel!.sink.add(message);
@@ -49,7 +48,6 @@ class WebSocketService {
     }
   }
 
-  /// 연결 종료
   void disconnect() {
     if (_isConnected && _channel != null) {
       _channel!.sink.close(status.goingAway);
@@ -59,9 +57,6 @@ class WebSocketService {
     }
   }
 
-  /// 서버에서 수신되는 메시지를 스트림으로 반환
   Stream<String> get stream => _controller.stream;
-
-  /// 연결 상태
   bool get isConnected => _isConnected;
 }
