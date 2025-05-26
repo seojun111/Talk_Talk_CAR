@@ -2,16 +2,14 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class VoiceCommandService {
-  /// 명령을 처리하는 중이라는 시뮬레이션용 딜레이 (TTS 전에 사용)
   Future<void> processCommand(String command) async {
     await Future.delayed(Duration(seconds: 1));
   }
 
-  /// 명령을 백엔드 서버로 전송
   Future<void> sendCommand(String cmd) async {
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:8000/command'), // ✅ 수정됨
+        Uri.parse('http://192.168.0.10:8000/command'), // ✅ 실제 서버 IP 사용
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'command': cmd}),
       );
@@ -26,11 +24,10 @@ class VoiceCommandService {
     }
   }
 
-  /// 센서 상태 조회 요청 (예: 연료 상태, 전압 등)
   Future<Map<String, dynamic>?> getStatus() async {
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:8000/status'), // ✅ 수정됨
+        Uri.parse('http://192.168.0.10:8000/status'), // ✅ 실제 서버 IP 사용
         headers: {'Accept': 'application/json'},
       );
 
