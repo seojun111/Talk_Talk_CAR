@@ -9,7 +9,7 @@ import 'dart:async';
 
 class VoiceCommandScreen extends StatefulWidget {
   final String? passedCommand;
-  final bool isHeavyRain;
+  final bool isHeavyRain; // ✅ 폭우 상태 추가
 
   const VoiceCommandScreen({Key? key, this.passedCommand, this.isHeavyRain = false})
       : super(key: key);
@@ -55,6 +55,7 @@ class _VoiceCommandScreenState extends State<VoiceCommandScreen>
   }
 
   Future<void> _startFlowAfterTTS() async {
+    // ✅ 폭우 상태일 때 경고 안내 추가
     if (widget.isHeavyRain) {
       await _ttsService.speak("현재 폭우로 인해 자율주행 관련 기능은 사용 불가합니다.");
       await Future.delayed(Duration(milliseconds: 300));
@@ -71,13 +72,6 @@ class _VoiceCommandScreenState extends State<VoiceCommandScreen>
     if (result.isNotEmpty) {
       _recognizedText = result;
       _cancelListeningTimer();
-
-      if (widget.isHeavyRain) {
-        await _ttsService.speak("폭우로 인해 명령을 실행하지 않습니다.");
-        if (mounted) Navigator.pop(context);
-        return;
-      }
-
       _startVoiceCommandFlow();
     } else {
       if (mounted) Navigator.pop(context);
@@ -98,12 +92,6 @@ class _VoiceCommandScreenState extends State<VoiceCommandScreen>
 
     await _ttsService.speak("인식 결과는 $command 입니다.");
     await Future.delayed(Duration(seconds: 2));
-
-    if (widget.isHeavyRain) {
-      await _ttsService.speak("폭우로 인해 명령을 실행하지 않습니다.");
-      if (mounted) Navigator.pop(context);
-      return;
-    }
 
     setState(() {
       _state = 'executing';
