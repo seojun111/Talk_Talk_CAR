@@ -61,7 +61,7 @@ class _EmergencyScreenState extends State<EmergencyScreen>
   Future<void> _notifyEmergencyToBackend() async {
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.0.10:8000/emergency'), // ✅ 서버 IP로 수정
+        Uri.parse('http://172.31.89.39:8000/emergency'), // ✅ 서버 IP로 수정
         headers: {'Content-Type': 'application/json'},
       );
       if (response.statusCode == 200) {
