@@ -1,33 +1,42 @@
+
+// ✅ VoiceCommandService
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'websocket_service.dart';
 
 class VoiceCommandService {
+  final WebSocketService _webSocketService = WebSocketService();
+
   Future<void> processCommand(String command) async {
+    // REST 전송
+    //await sendCommand(command);
+    // WebSocket 전송
+    _webSocketService.send(command);
     await Future.delayed(Duration(seconds: 1));
   }
-
+/*
   Future<void> sendCommand(String cmd) async {
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.0.10:8000/command'), // ✅ 실제 서버 IP 사용
+        Uri.parse('http://172.31.89.39:8000/ai_command'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'command': cmd}),
+        body: jsonEncode({'ai_command': cmd}),
       );
 
       if (response.statusCode == 200) {
-        print("📤 명령 전송 성공: $cmd");
+        print("📤 REST 전송 성공: $cmd");
       } else {
-        print("⚠️ 명령 전송 실패: ${response.statusCode}");
+        print("⚠️ REST 전송 실패: ${response.statusCode}");
       }
     } catch (e) {
-      print("❌ 명령 전송 오류: $e");
+      print("❌ REST 전송 오류: $e");
     }
   }
-
+*/
   Future<Map<String, dynamic>?> getStatus() async {
     try {
       final response = await http.get(
-        Uri.parse('http://192.168.0.10:8000/status'), // ✅ 실제 서버 IP 사용
+        Uri.parse('http://172.31.89.39:8000/status'),
         headers: {'Accept': 'application/json'},
       );
 
