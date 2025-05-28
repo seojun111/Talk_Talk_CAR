@@ -1,14 +1,22 @@
+// ✅ WebSocketService (singleton)
 import 'dart:async';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/status.dart' as status;
 
 class WebSocketService {
+  static final WebSocketService _instance = WebSocketService._internal();
+
+  factory WebSocketService() {
+    return _instance;
+  }
+
+  WebSocketService._internal();
+
   WebSocketChannel? _channel;
   final _controller = StreamController<String>.broadcast();
   bool _isConnected = false;
 
-  final String _url =
-      'ws://192.168.0.10:8000/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyIiwiZXhwIjoxNzQ3MTM4NzQ2fQ.s3aJ4ZPnbAwUBpQ54ohwipgDEHG4L887D2g14RQt4Bw'; // ✅ 실제 서버 IP 사용
+  final String _url = 'ws://172.31.89.39:8000/ws?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyIiwiZXhwIjoxNzQ4NDE3ODk4fQ.e0RJ6DcvRsUsCOCf-auSSz2m4vE9c-s8ANJRPyXOziQ';
 
   void connect() {
     if (_isConnected) return;
@@ -19,7 +27,7 @@ class WebSocketService {
       print("✅ WebSocket 연결됨: $_url");
 
       _channel!.stream.listen(
-        (message) {
+            (message) {
           print("📥 수신된 메시지: $message");
           _controller.add(message);
         },
@@ -31,7 +39,6 @@ class WebSocketService {
         onDone: () {
           print("🛑 WebSocket 연결 종료됨");
           _isConnected = false;
-          _controller.close();
         },
       );
     } catch (e) {
@@ -42,16 +49,15 @@ class WebSocketService {
   void send(String message) {
     if (_isConnected && _channel != null) {
       _channel!.sink.add(message);
-      print("📤 전송한 명령: $message");
+      print("📤 WebSocket 전송: $message");
     } else {
-      print("⚠️ WebSocket 연결 안 됨: 메시지를 전송할 수 없음");
+      print("⚠️ WebSocket 연결 안 됨: 메시지 전송 실패");
     }
   }
 
   void disconnect() {
     if (_isConnected && _channel != null) {
       _channel!.sink.close(status.goingAway);
-      _controller.close();
       _isConnected = false;
       print("🔌 WebSocket 연결 해제됨");
     }
