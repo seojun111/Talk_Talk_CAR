@@ -30,24 +30,10 @@ class _MainScreenState extends State<MainScreen> {
     super.initState();
     _connectToWebSocket();
     _initTTS();
-    _startStatusUpdater();
   }
 
   Future<void> _initTTS() async {
     await _ttsService.speak("톡톡카 입니다. 버튼을 눌러 음성 명령을 시작하세요.");
-  }
-
-  void _startStatusUpdater() {
-    Timer.periodic(Duration(seconds: 3), (timer) async {
-      final status = await _voiceService.getStatus();
-      if (status != null && mounted) {
-        setState(() {
-          _battery = '${status['voltage']}V';
-          _speed = '${status['speed']} km/h';
-          _mode = status['engine_on'] ? '켜짐' : '꺼짐';
-        });
-      }
-    });
   }
 
   void _connectToWebSocket() {
@@ -57,11 +43,14 @@ class _MainScreenState extends State<MainScreen> {
         Map<String, dynamic> data = jsonDecode(message);
         setState(() {
           _status = '연결됨';
-          _speed = '${data['speed']} km/h';
-          _battery = '${data['battery']}%';
-          _mode = data['mode'] ?? '대기 중';
+          _speed = data.containsKey('speed') ? '${data['speed']} km/h' : '- km/h';
+          _battery = data.containsKey('battery') ? '${data['battery']}%' : '- %';
+          _mode = data.containsKey('engine_on')
+              ? (data['engine_on'] ? '켜짐' : '꺼짐')
+              : '대기 중';
         });
-      } catch (_) {
+      } catch (e) {
+        print('❌ 데이터 파싱 오류: $e');
         setState(() {
           _status = '데이터 수신 오류';
           _speed = '- km/h';
@@ -69,7 +58,8 @@ class _MainScreenState extends State<MainScreen> {
           _mode = '-';
         });
       }
-    }, onError: (_) {
+    }, onError: (error) {
+      print('❌ WebSocket 에러: $error');
       setState(() {
         _status = '연결 실패';
       });
@@ -98,10 +88,7 @@ class _MainScreenState extends State<MainScreen> {
               icon: Icon(Icons.warning, color: Colors.redAccent),
               tooltip: '비상',
               onPressed: () async {
-                // ✅ VoiceCommandService로 명령 처리
                 await _voiceService.processCommand("응급상황 발생");
-
-                // ✅ EmergencyScreen으로 이동
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => EmergencyScreen()),
@@ -183,13 +170,13 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   TextStyle _statusStyle() => GoogleFonts.roboto(
-        color: Colors.white,
-        fontSize: 24,
-        fontWeight: FontWeight.bold,
-      );
+    color: Colors.white,
+    fontSize: 24,
+    fontWeight: FontWeight.bold,
+  );
 
   TextStyle _infoStyle() => GoogleFonts.roboto(
-        color: Colors.white,
-        fontSize: 20,
-      );
+    color: Colors.white,
+    fontSize: 20,
+  );
 }
