@@ -61,16 +61,17 @@ class _EmergencyScreenState extends State<EmergencyScreen>
   Future<void> _notifyEmergencyToBackend() async {
     try {
       final response = await http.post(
-        Uri.parse('http://172.31.89.39:8000/emergency'), // ✅ 서버 IP로 수정
-        headers: {'Content-Type': 'application/json'},
+        Uri.parse('http://172.31.89.39:8000/emergency'), // ✅ 서버 IP
+        headers: {'Content-Type': 'text/plain'},         // ✅ JSON → plain text로 변경
+        body: '응급상황 발생',                             // ✅ 메시지 본문 추가
       );
       if (response.statusCode == 200) {
-        print('✅ 위급 상황 알림 전송 성공');
+        print('✅ 위급 상황 텍스트 전송 성공');
       } else {
-        print('❌ 위급 상황 전송 실패: ${response.statusCode}');
+        print('❌ 위급 상황 텍스트 전송 실패: ${response.statusCode}');
       }
     } catch (e) {
-      print('❌ 위급 상황 전송 중 오류: $e');
+      print('❌ 위급 상황 텍스트 전송 중 오류: $e');
     }
   }
 
