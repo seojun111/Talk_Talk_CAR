@@ -16,7 +16,7 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   final WebSocketService _webSocketService = WebSocketService();
   final TTSService _ttsService = TTSService();
-  final VoiceCommandService _commandService = VoiceCommandService();
+  final VoiceCommandService _voiceService = VoiceCommandService();
 
   String _status = '연결 안됨';
   String _speed = '0 km/h';
@@ -39,7 +39,7 @@ class _MainScreenState extends State<MainScreen> {
 
   void _startStatusUpdater() {
     Timer.periodic(Duration(seconds: 3), (timer) async {
-      final status = await _commandService.getStatus();
+      final status = await _voiceService.getStatus();
       if (status != null && mounted) {
         setState(() {
           _battery = '${status['voltage']}V';
@@ -90,16 +90,18 @@ class _MainScreenState extends State<MainScreen> {
         title: Text('톡톡카 - 실시간 차량 모니터링'),
         centerTitle: true,
         backgroundColor: Colors.blueAccent,
-        leadingWidth: 100, // 좌측 버튼 영역 넓게
+        leadingWidth: 100,
         leading: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
               icon: Icon(Icons.warning, color: Colors.redAccent),
               tooltip: '비상',
-              onPressed: () {
-                // ✅ WebSocket으로 응급 상황 전송 추가
-                _webSocketService.send("응급상황 발생");
+              onPressed: () async {
+                // ✅ VoiceCommandService로 명령 처리
+                await _voiceService.processCommand("응급상황 발생");
+
+                // ✅ EmergencyScreen으로 이동
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => EmergencyScreen()),
