@@ -98,6 +98,8 @@ class _MainScreenState extends State<MainScreen> {
               icon: Icon(Icons.warning, color: Colors.redAccent),
               tooltip: '비상',
               onPressed: () {
+                // ✅ WebSocket으로 응급 상황 전송 추가
+                _webSocketService.send("응급상황 발생");
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => EmergencyScreen()),
@@ -147,7 +149,7 @@ class _MainScreenState extends State<MainScreen> {
               onTap: () async {
                 if (isHeavyRain) {
                   await _ttsService.speak("현재 폭우로 인해 자율주행 관련 기능은 사용 불가합니다.");
-                  return; // 음성 명령 화면 진입 막음
+                  return;
                 }
 
                 Navigator.push(
@@ -179,13 +181,13 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   TextStyle _statusStyle() => GoogleFonts.roboto(
-    color: Colors.white,
-    fontSize: 24,
-    fontWeight: FontWeight.bold,
-  );
+        color: Colors.white,
+        fontSize: 24,
+        fontWeight: FontWeight.bold,
+      );
 
   TextStyle _infoStyle() => GoogleFonts.roboto(
-    color: Colors.white,
-    fontSize: 20,
-  );
+        color: Colors.white,
+        fontSize: 20,
+      );
 }
