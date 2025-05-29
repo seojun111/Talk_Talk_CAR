@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../services/voice_command_service.dart';
 import '../services/tts_service.dart';
 import '../services/speech_service.dart';
+import '../services/websocket_service.dart';
 import 'mypage.dart';
 import 'dart:async';
 
@@ -11,24 +12,24 @@ class VoiceCommandScreen extends StatefulWidget {
   final String? passedCommand;
   final bool isHeavyRain;
 
-  const VoiceCommandScreen({Key? key, this.passedCommand, this.isHeavyRain = false})
-      : super(key: key);
+  const VoiceCommandScreen({Key? key, this.passedCommand, this.isHeavyRain = false}) : super(key: key);
 
   @override
   _VoiceCommandScreenState createState() => _VoiceCommandScreenState();
 }
 
-class _VoiceCommandScreenState extends State<VoiceCommandScreen>
-    with SingleTickerProviderStateMixin {
+class _VoiceCommandScreenState extends State<VoiceCommandScreen> with SingleTickerProviderStateMixin {
   final VoiceCommandService _voiceService = VoiceCommandService();
   final TTSService _ttsService = TTSService();
   final SpeechService _speechService = SpeechService();
+  final WebSocketService _webSocketService = WebSocketService();
 
   String _state = 'listening';
   String _recognizedText = '';
   bool _isListening = false;
   Timer? _listeningTimer;
   int _remainingSeconds = 10;
+  StreamSubscription<String>? _webSocketSubscription;
 
   late AnimationController _micAnimationController;
   late Animation<Color?> _micColorAnimation;
@@ -46,6 +47,12 @@ class _VoiceCommandScreenState extends State<VoiceCommandScreen>
       begin: Colors.white,
       end: Colors.redAccent,
     ).animate(_micAnimationController);
+
+    // ✅ WebSocket 메시지 구독
+    _webSocketSubscription = _webSocketService.stream.listen((message) async {
+      print("✅ 서버 응답 수신: $message");
+      await _ttsService.speak("서버 응답: $message");
+    });
 
     if (widget.passedCommand != null) {
       _handlePassedCommand(widget.passedCommand!);
@@ -132,7 +139,6 @@ class _VoiceCommandScreenState extends State<VoiceCommandScreen>
     }
   }
 
-  // ✅ 이제 '마이페이지' 단어만 있으면 전환
   bool _checkNavigateToMyPage(String text) {
     return text.contains("마이페이지");
   }
@@ -175,6 +181,7 @@ class _VoiceCommandScreenState extends State<VoiceCommandScreen>
     _ttsService.stop();
     _cancelListeningTimer();
     _micAnimationController.dispose();
+    _webSocketSubscription?.cancel(); // ✅ WebSocket 구독 해제
     super.dispose();
   }
 
