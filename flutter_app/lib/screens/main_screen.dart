@@ -323,7 +323,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                     padding: EdgeInsets.symmetric(horizontal: 60),
                     child: Text(
                       isHeavyRain
-                          ? '폭우로 인해 기능이 제한됩니다\n날씨가 좋아지면 다시 시도하세요'
+                          ? '폭우로 인해 기능이 제한됩니다\n'
                           : '화면을 터치하여\n음성 명령을 시작하세요',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.roboto(
