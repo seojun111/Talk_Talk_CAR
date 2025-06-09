@@ -1,4 +1,4 @@
-// lib/services/speech_service.dart (Completer 완료 보장 강화 버전)
+//lib/services/speech_service.dart
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'dart:async';
