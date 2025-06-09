@@ -1,7 +1,7 @@
+//lib/screens/main_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:convert';
 import '../services/websocket_service.dart';
 import '../services/tts_service.dart';
 import '../services/voice_command_service.dart';
@@ -28,6 +28,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
 
+  // WebSocket 스트림 구독 관리
+  StreamSubscription<String>? _webSocketSubscription;
+
   @override
   void initState() {
     super.initState();
@@ -53,43 +56,37 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   Future<void> _initTTS() async {
     await _ttsService.speak(
-        "톡톡카에 오신 것을 환영합니다. "
-            "화면의 거의 전체 영역이 음성 명령 버튼입니다. "
-            "화면을 터치하여 음성 명령을 시작하세요."
+        "메인 화면 입니다. "
     );
   }
 
   void _connectToWebSocket() {
     _webSocketService.connect();
-    _webSocketService.stream.listen((message) {
-      try {
-        Map<String, dynamic> data = jsonDecode(message);
+
+    // 스트림 구독을 변수에 저장
+    _webSocketSubscription = _webSocketService.stream.listen((message) {
+      print('📥 텍스트 메시지 수신: $message');
+
+      // mounted 체크 추가!
+      if (mounted) {
         setState(() {
           _status = '연결됨';
-          _speed = data.containsKey('speed') ? '${data['speed']} km/h' : '- km/h';
-          _battery = data.containsKey('battery') ? '${data['battery']}%' : '- %';
-          _mode = data.containsKey('engine_on')
-              ? (data['engine_on'] ? '켜짐' : '꺼짐')
-              : '대기 중';
+          _mode = '메시지 수신됨';
         });
-
-        _ttsService.speak("차량 연결됨. 속도 $_speed, 배터리 $_battery, 모드 $_mode");
-      } catch (e) {
-        print('❌ 데이터 파싱 오류: $e');
-        setState(() {
-          _status = '데이터 수신 오류';
-          _speed = '- km/h';
-          _battery = '- %';
-          _mode = '-';
-        });
-        _ttsService.speak("데이터 수신 오류가 발생했습니다");
       }
+
+      // 메인 화면에서는 TTS 없음 - AI 응답 화면에서만 처리
+
     }, onError: (error) {
       print('❌ WebSocket 에러: $error');
-      setState(() {
-        _status = '연결 실패';
-      });
-      _ttsService.speak("차량 연결에 실패했습니다");
+
+      // mounted 체크 추가!
+      if (mounted) {
+        setState(() {
+          _status = '연결 실패';
+        });
+        _ttsService.speak("차량 연결에 실패했습니다");
+      }
     });
   }
 
@@ -112,9 +109,19 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   @override
   void dispose() {
+    print('🗑️ MainScreen dispose 시작');
+
+    // 1. 애니메이션 컨트롤러 dispose
     _pulseController.dispose();
-    _webSocketService.disconnect();
+
+    // 2. WebSocket 스트림 구독 취소 (중요!)
+    _webSocketSubscription?.cancel();
+    _webSocketSubscription = null;
+
+    // 3. TTS 중지
     _ttsService.stop();
+
+    print('🗑️ MainScreen dispose 완료');
     super.dispose();
   }
 
