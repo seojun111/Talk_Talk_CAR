@@ -1,9 +1,8 @@
-// lib/services/tts_service.dart
-
 import 'package:flutter_tts/flutter_tts.dart';
 
 class TTSService {
   FlutterTts flutterTts = FlutterTts();
+  bool _isSpeaking = false;
 
   TTSService() {
     _init();
@@ -12,15 +11,31 @@ class TTSService {
   Future<void> _init() async {
     await flutterTts.setLanguage("ko-KR");
     await flutterTts.setPitch(1.0);
-    await flutterTts.setSpeechRate(1.5);
+    await flutterTts.setSpeechRate(2.0);
     await flutterTts.awaitSpeakCompletion(true);
 
-    // 웹 환경에서 음성 설정 명시적으로 지정
+    // TTS 상태 모니터링
+    flutterTts.setStartHandler(() {
+      _isSpeaking = true;
+      print("🔊 TTS 시작");
+    });
+
+    flutterTts.setCompletionHandler(() {
+      _isSpeaking = false;
+      print("✅ TTS 완료");
+    });
+
+    flutterTts.setErrorHandler((msg) {
+      _isSpeaking = false;
+      print("❌ TTS 오류: $msg");
+    });
+
+    // 웹 환경에서 음성 설정
     try {
       List<dynamic> voices = await flutterTts.getVoices;
       if (voices.isNotEmpty) {
         var koreanVoice = voices.firstWhere(
-          (v) => v['locale'] == "ko-KR",
+              (v) => v['locale'] == "ko-KR",
           orElse: () => voices.first,
         );
         await flutterTts.setVoice({
@@ -36,14 +51,29 @@ class TTSService {
 
   Future<void> speak(String text) async {
     try {
+      // 기존 TTS 중단 후 새로운 TTS 시작
+      if (_isSpeaking) {
+        await stop();
+        await Future.delayed(Duration(milliseconds: 100)); // 잠시 대기
+      }
+
       print("🔊 말하기: $text");
       await flutterTts.speak(text);
     } catch (e) {
       print("❌ TTS 오류: $e");
+      _isSpeaking = false;
     }
   }
 
   Future<void> stop() async {
-    await flutterTts.stop();
+    try {
+      await flutterTts.stop();
+      _isSpeaking = false;
+      print("🛑 TTS 중단");
+    } catch (e) {
+      print("❌ TTS 중단 오류: $e");
+    }
   }
+
+  bool get isSpeaking => _isSpeaking;
 }
