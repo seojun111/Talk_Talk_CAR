@@ -12,7 +12,7 @@ const int BLUE_PIN = 5;
 const int WARNING_LED = 2;
 const int SPEAKER = 7;
 
-int batteryPercent = 0;  // ✅ 초기값만 0으로 두고, 백엔드에서 설정함
+int batteryPercent = 0;
 bool engineOn = false;
 bool doorOpen = false;
 int currentSpeed = 0;
@@ -30,7 +30,9 @@ void setup() {
   BTSerial.begin(9600);
   speedServo.attach(SERVO_PIN);
 
-  Serial.println("시스템 시작됨. 배터리 잔량은 백엔드에서 설정됩니다.");
+  randomSeed(analogRead(0));  // 랜덤 시드 초기화
+
+  Serial.println("시스템 시작됨.");
   updateBatteryLED();
 }
 
@@ -42,15 +44,18 @@ void controlEngine(bool state) {
 }
 
 void updateBatteryLED() {
-  if (batteryPercent > 70) {
+  if (batteryPercent >= 60) {
+    // 초록
     digitalWrite(RED_PIN, LOW);
     digitalWrite(GREEN_PIN, HIGH);
     digitalWrite(BLUE_PIN, LOW);
-  } else if (batteryPercent > 40) {
+  } else if (batteryPercent >= 30) {
+    // 노랑 (빨강 + 초록)
     digitalWrite(RED_PIN, HIGH);
     digitalWrite(GREEN_PIN, HIGH);
     digitalWrite(BLUE_PIN, LOW);
   } else {
+    // 빨강
     digitalWrite(RED_PIN, HIGH);
     digitalWrite(GREEN_PIN, LOW);
     digitalWrite(BLUE_PIN, LOW);
@@ -60,6 +65,7 @@ void updateBatteryLED() {
   BTSerial.print(batteryPercent);
   BTSerial.println("%");
 }
+
 
 void updateSpeedServo(int speed) {
   currentSpeed = speed;
@@ -137,9 +143,11 @@ void processCommand(String cmd) {
     int speed = cmd.substring(1).toInt();
     updateSpeedServo(speed);
   }
-  else if (cmd.startsWith("F")) {  // ✅ 백엔드에서 배터리 잔량 설정
-    batteryPercent = constrain(cmd.substring(1).toInt(), 0, 100);
+  else if (cmd == "F") {  // 🎯 연료 설정 명령 → 랜덤 배터리 값 생성
+    batteryPercent = random(1, 101);  // 1 ~ 100
     updateBatteryLED();
+    Serial.print("새 배터리 잔량: ");
+    Serial.println(batteryPercent);
   }
   else if (cmd == "B") notifyDoorOpen();
   else if (cmd == "b") notifyDoorClose();
